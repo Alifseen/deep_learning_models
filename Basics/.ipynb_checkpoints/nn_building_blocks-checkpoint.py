@@ -52,7 +52,24 @@ def initialize_parameters_deep_xavier(layer_dims):
         
     return parameters
 
+
+def initialize_parameters_he(layers_dims):
+    np.random.seed(3)
+
+    parameters = {}
+    L = len(layers_dims)
+
+    for l in range(1, L):
+        parameters["W"+str(l)] = np.random.randn(layers_dims[l], layers_dims[l-1]) *np.sqrt(2./layers_dims[l-1])
+        parameters["b"+str(l)] = np.zeros((layers_dims[l],1))
+
+        assert(parameters['W' + str(l)].shape == (layer_dims[l], layer_dims[l-1]))
+        assert(parameters['b' + str(l)].shape == (layer_dims[l], 1))
     
+    return parameters
+
+
+
 
 def linear_forward(A, W, b):
 
@@ -64,6 +81,7 @@ def linear_forward(A, W, b):
 
 
 def sigmoid(Z):
+    Z = np.clip(Z, -500, 500)
     A = 1 / (1+np.exp(-Z))
     cache = Z
     return A, cache
@@ -108,6 +126,7 @@ def L_model_forward(X, parameters):
 
 def compute_cost(AL, Y):
     m = Y.shape[1]
+    AL = np.clip(AL, 1e-8, 1 - 1e-8)
     j = -(1/m) * np.sum((Y*np.log(AL)) + ((1-Y)*np.log(1-AL)))
     j = np.squeeze(j)
     
@@ -156,11 +175,42 @@ def L_model_backward(AL, Y, caches):
     L = len(caches)
     m = AL.shape[1]
     Y = Y.reshape(AL.shape)
-
+    
     dAL = -(np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
 
     current_cache = caches[-1]
     dA_prev_temp, dW_temp, db_temp = linear_activation_backward(dAL, current_cache, "sigmoid")
+    grads["dA" + str(L-1)] = dA_prev_temp
+    grads["dW" + str(L)] = dW_temp
+    grads["db" + str(L)] = db_temp
+    
+    
+    for l in range(L-2, -1, -1):
+        dA_prev = dA_prev_temp
+        current_cache = caches[l]
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(dA_prev, current_cache, "relu")
+        grads["dA" + str(l)] = dA_prev_temp
+        grads["dW" + str(l+1)] = dW_temp
+        grads["db" + str(l+1)] = db_temp        
+        
+    
+    return grads
+    
+def L_model_backward_direct(AL, Y, caches):
+    grads = {}
+    L = len(caches)
+    m = AL.shape[1]
+    Y = Y.reshape(AL.shape)
+    
+    dZL = (AL-Y)
+
+    current_cache = caches[-1]
+    linear_cache, activation_cache = current_cache
+
+    A_prev, W, b = linear_cache
+    dA_prev_temp = np.dot(W.T, dZL)
+    dW_temp = (1/m) * np.dot(dZL, A_prev.T)
+    db_temp = (1/m) * np.sum(dZL, axis=1, keepdims=True)
     grads["dA" + str(L-1)] = dA_prev_temp
     grads["dW" + str(L)] = dW_temp
     grads["db" + str(L)] = db_temp
