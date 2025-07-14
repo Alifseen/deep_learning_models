@@ -1,13 +1,524 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import h5py
-import sklearn
-import sklearn.datasets
-import sklearn.linear_model
-import scipy.io
+
+### ex1
+def update_parameters_with_gd_test_case():
+    np.random.seed(1)
+    learning_rate = 0.01
+    W1 = np.random.randn(2,3)
+    b1 = np.random.randn(2,1)
+    W2 = np.random.randn(3,2)
+    b2 = np.random.randn(3,1)
+
+    dW1 = np.random.randn(2,3)
+    db1 = np.random.randn(2,1)
+    dW2 = np.random.randn(3,2)
+    db2 = np.random.randn(3,1)
+    
+    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
+    grads = {"dW1": dW1, "db1": db1, "dW2": dW2, "db2": db2}
+    
+    return parameters, grads, learning_rate
+
+"""
+def update_parameters_with_sgd_checker(function, inputs, outputs):
+    if function(inputs) == outputs:
+        print("Correct")
+    else:
+        print("Incorrect")
+"""
+
+
+### ex 2
+def random_mini_batches_test_case():
+    np.random.seed(1)
+    mini_batch_size = 64
+    X = np.random.randn(12288, 148)
+    Y = np.random.randn(1, 148) < 0.5
+    return X, Y, mini_batch_size
+
+
+### ex 3
+def initialize_velocity_test_case():
+    np.random.seed(1)
+    W1 = np.random.randn(3,2)
+    b1 = np.random.randn(3,1)
+    W2 = np.random.randn(3,3)
+    b2 = np.random.randn(3,1)
+    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
+    return parameters
+
+
+### ex 4
+def update_parameters_with_momentum_test_case():
+    np.random.seed(1)
+    W1 = np.random.randn(2,3)
+    b1 = np.random.randn(2,1)
+    W2 = np.random.randn(3,2)
+    b2 = np.random.randn(3,1)
+
+    dW1 = np.random.randn(2,3)
+    db1 = np.random.randn(2,1)
+    dW2 = np.random.randn(3,2)
+    db2 = np.random.randn(3,1)
+   
+    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
+    grads = {"dW1": dW1, "db1": db1, "dW2": dW2, "db2": db2}
+    
+    v = {'dW1': np.array([[ 0.,  0.,  0.],
+                          [ 0.,  0.,  0.]]), 
+         'dW2': np.array([[ 0.,  0.],
+                          [ 0.,  0.],
+                          [ 0.,  0.]]), 
+         'db1': np.array([[ 0.],
+                          [ 0.]]), 
+         'db2': np.array([[ 0.],
+                          [ 0.],
+                          [ 0.]])}
+    
+    return parameters, grads, v
+
+
+### ex 5
+def initialize_adam_test_case():
+    np.random.seed(1)
+    W1 = np.random.randn(2,3)
+    b1 = np.random.randn(2,1)
+    W2 = np.random.randn(3,2)
+    b2 = np.random.randn(3,1)
+    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
+    return parameters
+
+
+### ex 6
+def update_parameters_with_adam_test_case():
+    np.random.seed(1)
+    v, s = ({'dW1': np.array([[ 0.,  0.,  0.], # (2, 3)
+                              [ 0.,  0.,  0.]]), 
+             'dW2': np.array([[ 0.,  0.],      # (3, 2)
+                              [ 0.,  0.],
+                              [ 0.,  0.]]), 
+             'db1': np.array([[ 0.],           # (2, 1)
+                              [ 0.]]), 
+             'db2': np.array([[ 0.],          # (3, 1)
+                              [ 0.],
+                              [ 0.]])}, 
+            {'dW1': np.array([[ 0.,  0.,  0.], # (2, 3)
+                              [ 0.,  0.,  0.]]), 
+             'dW2': np.array([[ 0.,  0.],      # (3, 2)
+                              [ 0.,  0.],
+                              [ 0.,  0.]]), 
+             'db1': np.array([[ 0.],           # (2, 1)
+                              [ 0.]]), 
+             'db2': np.array([[ 0.],           # (3, 1)
+                              [ 0.],
+                              [ 0.]])})
+    W1 = np.random.randn(2,3)
+    b1 = np.random.randn(2,1)
+    W2 = np.random.randn(3,2)
+    b2 = np.random.randn(3,1)
+
+    dW1 = np.random.randn(2,3)
+    db1 = np.random.randn(2,1)
+    dW2 = np.random.randn(3,2)
+    db2 = np.random.randn(3,1)
+    
+    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
+    grads = {"dW1": dW1, "db1": db1, "dW2": dW2, "db2": db2}
+    
+    t = 2
+    learning_rate = 0.02
+    beta1 = 0.8
+    beta2 = 0.888
+    epsilon = 1e-2
+    
+    return parameters, grads, v, s, t, learning_rate, beta1, beta2, epsilon
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from numpy import array
 from dlai_tools.testing_utils import single_test, multiple_test
 
-def sigmoid1(x):
+### ex 1         
+def update_parameters_with_gd_test(target):
+    parameters, grads, learning_rate = update_parameters_with_gd_test_case()
+    learning_rate = 0.01
+    
+    expected_output = {'W1': np.array([[ 1.63312395, -0.61217855, -0.5339999],
+                                       [-1.06196243,  0.85396039, -2.3105546]]),
+                       'b1': np.array([[ 1.73978682],
+                                       [-0.77021546]]),
+                       'W2': np.array([[ 0.32587637, -0.24814147],
+                                       [ 1.47146563, -2.05746183],
+                                       [-0.32772076, -0.37713775]]),
+                       'b2': np.array([[ 1.13773698],
+                                       [-1.09301954],
+                                       [-0.16397615]])}
+
+    params_up = target(parameters, grads, learning_rate)
+
+    for key in params_up.keys():
+        assert type(params_up[key]) == np.ndarray, f"Wrong type for {key}. We expected np.ndarray, but got {type(params_up[key])}"
+        assert params_up[key].shape == parameters[key].shape, f"Wrong shape for {key}. {params_up[key].shape} != {parameters[key].shape}"
+        assert np.allclose(params_up[key], expected_output[key]), f"Wrong values for {key}. Check the formulas. Expected: \n {expected_output[key]}"
+    
+    print("\033[92mAll tests passed")
+            
+### ex 2        
+def random_mini_batches_test(target):
+    np.random.seed(1)
+    mini_batch_size = 2
+    X = np.random.randn(5, 7)
+    Y = np.random.randn(1, 7) < 0.5
+
+    expected_output = [(np.array([[ 1.74481176, -0.52817175],
+                                  [-0.38405435, -0.24937038],
+                                  [-1.10061918, -0.17242821],
+                                  [-0.93576943,  0.50249434],
+                                  [-0.67124613, -0.69166075]]), 
+                        np.array([[ True,  True]])), 
+                       (np.array([[-0.61175641, -1.07296862],
+                                  [ 0.3190391 ,  1.46210794],
+                                  [-1.09989127, -0.87785842],
+                                  [ 0.90159072,  0.90085595],
+                                  [ 0.53035547, -0.39675353]]), 
+                        np.array([[ True, False]])), 
+                       (np.array([[ 1.62434536, -2.3015387 ],
+                                  [-0.7612069 , -0.3224172 ],
+                                  [ 1.13376944,  0.58281521],
+                                  [ 1.14472371, -0.12289023],
+                                  [-0.26788808, -0.84520564]]), 
+                        np.array([[ True,  True]])), 
+                       (np.array([[ 0.86540763],
+                                  [-2.06014071],
+                                  [ 0.04221375],
+                                  [-0.68372786],
+                                  [-0.6871727 ]]), 
+                        np.array([[False]]))]
+    
+    test_cases = [
+        {
+            "name":"datatype_check",
+            "input": [X, Y, mini_batch_size],
+            "expected": expected_output,
+            "error":"Datatype mismatch"
+        },
+        {
+            "name": "shape_check",
+            "input": [X, Y, mini_batch_size],
+            "expected": expected_output,
+            "error": "Wrong shape"
+        },
+        {
+            "name": "equation_output_check",
+            "input": [X, Y, mini_batch_size],
+            "expected": expected_output,
+            "error": "Wrong output"
+        }
+    ]
+    
+    multiple_test(test_cases, target)
+
+    
+### ex 3    
+def initialize_velocity_test(target):
+    parameters = initialize_velocity_test_case()
+    
+    expected_output = {'dW1': np.array([[0., 0.],
+                                        [0., 0.],
+                                        [0., 0.]]), 
+                       'db1': np.array([[0.],
+                                        [0.],
+                                        [0.]]), 
+                       'dW2': np.array([[0., 0., 0.],
+                                        [0., 0., 0.],
+                                        [0., 0., 0.]]), 
+                       'db2': array([[0.],
+                                     [0.],
+                                     [0.]])}
+    
+    test_cases = [
+        {
+            "name":"datatype_check",
+            "input": [parameters],
+            "expected": expected_output,
+            "error":"Datatype mismatch"
+        },
+        {
+            "name": "shape_check",
+            "input": [parameters],
+            "expected": expected_output,
+            "error": "Wrong shape"
+        },
+        {
+            "name": "equation_output_check",
+            "input": [parameters],
+            "expected": expected_output,
+            "error": "Wrong output"
+        } 
+    ]
+    
+    multiple_test(test_cases, target)
+
+### ex 4
+def update_parameters_with_momentum_test(target):
+    parameters, grads, v = update_parameters_with_momentum_test_case()
+    beta = 0.9
+    learning_rate = 0.01
+    
+    expected_parameters = {'W1': np.array([[ 1.62522322, -0.61179863, -0.52875457],
+                                           [-1.071868,    0.86426291, -2.30244029]]),
+                           'b1': np.array([[ 1.74430927],
+                                           [-0.76210776]]),
+                           'W2': np.array([[ 0.31972282, -0.24924749],
+                                           [ 1.46304371, -2.05987282],
+                                           [-0.32294756, -0.38336269]]),
+                           'b2': np.array([[ 1.1341662 ],
+                                           [-1.09920409],
+                                           [-0.171583  ]])}
+    
+    expected_v = {'dW1': np.array([[-0.08778584,  0.00422137,  0.05828152],
+                                   [-0.11006192,  0.11447237,  0.09015907]]),
+                  'dW2': np.array([[-0.06837279, -0.01228902],
+                                   [-0.09357694, -0.02678881],
+                                   [ 0.05303555, -0.06916608]]),
+                  'db1': np.array([[0.05024943],
+                                   [0.09008559]]),
+                  'db2': np.array([[-0.03967535],
+                                   [-0.06871727],
+                                   [-0.08452056]])}
+    
+    expected_output = (expected_parameters, expected_v)
+    test_cases = [
+        {
+            "name":"datatype_check",
+            "input": [parameters, grads, v, beta, learning_rate],
+            "expected": expected_output,
+            "error":"Datatype mismatch"
+        },
+        {
+            "name": "shape_check",
+            "input": [parameters, grads, v, beta, learning_rate],
+            "expected": expected_output,
+            "error": "Wrong shape"
+        },
+        {
+            "name": "equation_output_check",
+            "input": [parameters, grads, v, beta, learning_rate],
+            "expected": expected_output,
+            "error": "Wrong output"
+        } 
+    ]
+    
+    multiple_test(test_cases, target)    
+
+    
+### ex 5   
+def initialize_adam_test(target):
+    parameters = initialize_adam_test_case()
+    
+    expected_v = {'dW1': np.array([[0., 0., 0.],
+                                   [0., 0., 0.]]),
+                  'db1': np.array([[0.],
+                                   [0.]]),
+                  'dW2': np.array([[0., 0.],
+                                   [0., 0.],
+                                   [0., 0.]]),
+                  'db2': np.array([[0.],
+                                   [0.],
+                                   [0.]])}
+    
+    expected_s = {'dW1': np.array([[0., 0., 0.],
+                                   [0., 0., 0.]]),
+                  'db1': np.array([[0.],
+                                   [0.]]),
+                  'dW2': np.array([[0., 0.],
+                                   [0., 0.],
+                                   [0., 0.]]),
+                  'db2': np.array([[0.],
+                                   [0.],
+                                   [0.]])}
+    
+    expected_output = (expected_v, expected_s)
+    test_cases = [
+        {
+            "name":"datatype_check",
+            "input": [parameters],
+            "expected": expected_output,
+            "error":"The function should return a numpy array."
+        },
+        {
+            "name": "shape_check",
+            "input": [parameters],
+            "expected": expected_output,
+            "error": "Wrong shape"
+        },
+        {
+            "name": "equation_output_check",
+            "input": [parameters],
+            "expected": expected_output,
+            "error": "Wrong output"
+        } 
+    ]
+    
+    multiple_test(test_cases, target)
+    
+### ex 6    
+def update_parameters_with_adam_test(target):
+    parametersi, grads, vi, si, t, learning_rate, beta1, beta2, epsilon = update_parameters_with_adam_test_case()
+
+    c1 = 1.0 / (1 - beta1**t)
+    c2 = 1.0 / (1 - beta2**t)
+    
+    expected_v = {'dW1': np.array([-0.17557168,  0.00844275,  0.11656304]), 
+                  'dW2': np.array([-0.13674557, -0.02457805]), 
+                  'db1': np.array([0.10049887]), 
+                  'db2': np.array([-0.07935071])}
+    
+    expected_s = {'dW1': np.array([0.08631117, 0.00019958, 0.03804344]),
+                  'dW2':np.array([0.05235818, 0.00169142]),
+                  'db1':np.array([0.02828006]),
+                  'db2':np.array([0.0176303 ])}
+    
+    expected_parameters = {'W1': np.array([ 1.63937725, -0.62327448, -0.54308727]),
+                           'W2':np.array([ 0.33400549, -0.23563857]),
+                           'b1':np.array([ 1.72995096]),
+                           'b2':np.array([ 1.14852557])}
+
+    parameters, v, s, vc, sc  = target(parametersi, grads, vi, si, t, learning_rate, beta1, beta2, epsilon)
+    
+    for key in v.keys():
+        
+        assert type(v[key]) == np.ndarray, f"Wrong type for v['{key}']. Expected np.ndarray"
+        assert v[key].shape == vi[key].shape, f"Wrong shape for  v['{key}']. The update must keep the dimensions of v inputs"
+        assert np.allclose(v[key][0], expected_v[key]), f"Wrong values. Check you formulas for v['{key}']"
+        #print(f"v[\"{key}\"]: \n {str(v[key][0])}")
+
+    for key in vc.keys():
+        assert type(vc[key]) == np.ndarray, f"Wrong type for v_corrected['{key}']. Expected np.ndarray"
+        assert vc[key].shape == vi[key].shape, f"Wrong shape for  v_corrected['{key}']. The update must keep the dimensions of v inputs"
+        assert np.allclose(vc[key][0], expected_v[key] * c1), f"Wrong values. Check you formulas for v_corrected['{key}']"
+        #print(f"vc[\"{key}\"]: \n {str(vc[key])}")
+
+    for key in s.keys():
+        assert type(s[key]) == np.ndarray, f"Wrong type for s['{key}']. Expected np.ndarray"
+        assert s[key].shape == si[key].shape, f"Wrong shape for  s['{key}']. The update must keep the dimensions of s inputs"
+        assert np.allclose(s[key][0], expected_s[key]), f"Wrong values. Check you formulas for s['{key}']"
+        #print(f"s[\"{key}\"]: \n {str(s[key])}")
+
+    for key in sc.keys():
+        assert type(sc[key]) == np.ndarray, f"Wrong type for s_corrected['{key}']. Expected np.ndarray"
+        assert sc[key].shape == si[key].shape, f"Wrong shape for  s_corrected['{key}']. The update must keep the dimensions of s inputs"
+        assert np.allclose(sc[key][0], expected_s[key] * c2), f"Wrong values. Check you formulas for s_corrected['{key}']"   
+        # print(f"sc[\"{key}\"]: \n {str(sc[key])}")
+
+    for key in parameters.keys():
+        assert type(parameters[key]) == np.ndarray, f"Wrong type for parameters['{key}']. Expected np.ndarray"
+        assert parameters[key].shape == parametersi[key].shape, f"Wrong shape for  parameters['{key}']. The update must keep the dimensions of parameters inputs"
+        assert np.allclose(parameters[key][0], expected_parameters[key]), f"Wrong values. Check you formulas for parameters['{key}']"   
+        #print(f"{key}: \n {str(parameters[key])}")
+
+    print("\033[92mAll tests passed")
+
+
+### ex 7    
+def update_lr_test(target):
+    learning_rate = 0.5
+    epoch_num = 2
+    decay_rate = 1
+    expected_output = 0.16666666666666666
+    
+    output = target(learning_rate, epoch_num, decay_rate)
+    
+    assert np.isclose(output, expected_output), f"output: {output} expected: {expected_output}"
+    print("\033[92mAll tests passed")
+
+
+### ex 8    
+def schedule_lr_decay_test(target):
+    learning_rate = 0.5
+    epoch_num_1 = 100
+    epoch_num_2 = 10
+    decay_rate = 1
+    time_interval = 100
+    expected_output_1 = 0.25
+    expected_output_2 = 0.5
+    
+    output_1 = target(learning_rate, epoch_num_1, decay_rate, time_interval)
+    output_2 = target(learning_rate, epoch_num_2, decay_rate, time_interval)
+
+
+    assert np.isclose(output_1, expected_output_1),f"output: {output_1} expected: {expected_output_1}"
+    assert np.isclose(output_2, expected_output_2),f"output: {output_2} expected: {expected_output_2}"
+    
+    learning_rate = 0.3
+    epoch_num_1 = 1000
+    epoch_num_2 = 100
+    decay_rate = 0.25
+    time_interval = 100
+    expected_output_1 = 0.085714285
+    expected_output_2 = 0.24
+
+    output_1 = target(learning_rate, epoch_num_1, decay_rate, time_interval)
+    output_2 = target(learning_rate, epoch_num_2, decay_rate, time_interval)
+
+
+    assert np.isclose(output_1, expected_output_1),f"output: {output_1} expected: {expected_output_1}"
+    assert np.isclose(output_2, expected_output_2),f"output: {output_2} expected: {expected_output_2}"
+
+    print("\033[92mAll tests passed")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import matplotlib.pyplot as plt
+import h5py
+import scipy.io
+import sklearn
+import sklearn.datasets
+
+def sigmoid(x):
     """
     Compute the sigmoid of x
 
@@ -20,7 +531,7 @@ def sigmoid1(x):
     s = 1/(1+np.exp(-x))
     return s
 
-def relu1(x):
+def relu(x):
     """
     Compute the relu of x
 
@@ -34,28 +545,20 @@ def relu1(x):
     
     return s
 
-def load_planar_dataset(seed):
-    
+def load_params_and_grads(seed=1):
     np.random.seed(seed)
+    W1 = np.random.randn(2,3)
+    b1 = np.random.randn(2,1)
+    W2 = np.random.randn(3,3)
+    b2 = np.random.randn(3,1)
+
+    dW1 = np.random.randn(2,3)
+    db1 = np.random.randn(2,1)
+    dW2 = np.random.randn(3,3)
+    db2 = np.random.randn(3,1)
     
-    m = 400 # number of examples
-    N = int(m/2) # number of points per class
-    D = 2 # dimensionality
-    X = np.zeros((m,D)) # data matrix where each row is a single example
-    Y = np.zeros((m,1), dtype='uint8') # labels vector (0 for red, 1 for blue)
-    a = 4 # maximum ray of the flower
+    return W1, b1, W2, b2, dW1, db1, dW2, db2
 
-    for j in range(2):
-        ix = range(N*j,N*(j+1))
-        t = np.linspace(j*3.12,(j+1)*3.12,N) + np.random.randn(N)*0.2 # theta
-        r = a*np.sin(4*t) + np.random.randn(N)*0.2 # radius
-        X[ix] = np.c_[r*np.sin(t), r*np.cos(t)]
-        Y[ix] = j
-        
-    X = X.T
-    Y = Y.T
-
-    return X, Y
 
 def initialize_parameters(layer_dims):
     """
@@ -80,14 +583,37 @@ def initialize_parameters(layer_dims):
     L = len(layer_dims) # number of layers in the network
 
     for l in range(1, L):
-        parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l-1]) / np.sqrt(layer_dims[l-1])
+        parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l-1])*  np.sqrt(2 / layer_dims[l-1])
         parameters['b' + str(l)] = np.zeros((layer_dims[l], 1))
         
-        assert(parameters['W' + str(l)].shape == (layer_dims[l], layer_dims[l-1]))
-        assert(parameters['b' + str(l)].shape == (layer_dims[l], 1))
-
+        assert parameters['W' + str(l)].shape[0] == layer_dims[l], layer_dims[l-1]
+        assert parameters['W' + str(l)].shape[0] == layer_dims[l], 1
         
     return parameters
+
+
+def compute_cost(a3, Y):
+    
+    """
+    Implement the cost function
+    
+    Arguments:
+    a3 -- post-activation, output of forward propagation
+    Y -- "true" labels vector, same shape as a3
+    
+    Returns:
+    cost - value of the cost function without dividing by number of training examples
+    
+    Note: 
+    This is used with mini-batches, 
+    so we'll first accumulate costs over an entire epoch 
+    and then divide by the m training examples
+    """
+    
+    logprobs = np.multiply(-np.log(a3),Y) + np.multiply(-np.log(1 - a3), 1 - Y)
+    cost_total =  np.sum(logprobs)
+    
+    return cost_total
 
 def forward_propagation(X, parameters):
     """
@@ -106,7 +632,7 @@ def forward_propagation(X, parameters):
     Returns:
     loss -- the loss function (vanilla logistic loss)
     """
-        
+    
     # retrieve parameters
     W1 = parameters["W1"]
     b1 = parameters["b1"]
@@ -116,16 +642,16 @@ def forward_propagation(X, parameters):
     b3 = parameters["b3"]
     
     # LINEAR -> RELU -> LINEAR -> RELU -> LINEAR -> SIGMOID
-    Z1 = np.dot(W1, X) + b1
-    A1 = relu1(Z1)
-    Z2 = np.dot(W2, A1) + b2
-    A2 = relu1(Z2)
-    Z3 = np.dot(W3, A2) + b3
-    A3 = sigmoid1(Z3)
+    z1 = np.dot(W1, X) + b1
+    a1 = relu(z1)
+    z2 = np.dot(W2, a1) + b2
+    a2 = relu(z2)
+    z3 = np.dot(W3, a2) + b3
+    a3 = sigmoid(z3)
     
-    cache = (Z1, A1, W1, b1, Z2, A2, W2, b2, Z3, A3, W3, b3)
+    cache = (z1, a1, W1, b1, z2, a2, W2, b2, z3, a3, W3, b3)
     
-    return A3, cache
+    return a3, cache
 
 def backward_propagation(X, Y, cache):
     """
@@ -140,55 +666,29 @@ def backward_propagation(X, Y, cache):
     gradients -- A dictionary with the gradients with respect to each parameter, activation and pre-activation variables
     """
     m = X.shape[1]
-    (Z1, A1, W1, b1, Z2, A2, W2, b2, Z3, A3, W3, b3) = cache
+    (z1, a1, W1, b1, z2, a2, W2, b2, z3, a3, W3, b3) = cache
     
-    dZ3 = A3 - Y
-    dW3 = 1./m * np.dot(dZ3, A2.T)
-    db3 = 1./m * np.sum(dZ3, axis=1, keepdims = True)
+    dz3 = 1./m * (a3 - Y)
+    dW3 = np.dot(dz3, a2.T)
+    db3 = np.sum(dz3, axis=1, keepdims = True)
     
-    dA2 = np.dot(W3.T, dZ3)
-    dZ2 = np.multiply(dA2, np.int64(A2 > 0))
-    dW2 = 1./m * np.dot(dZ2, A1.T)
-    db2 = 1./m * np.sum(dZ2, axis=1, keepdims = True)
+    da2 = np.dot(W3.T, dz3)
+    dz2 = np.multiply(da2, np.int64(a2 > 0))
+    dW2 = np.dot(dz2, a1.T)
+    db2 = np.sum(dz2, axis=1, keepdims = True)
     
-    dA1 = np.dot(W2.T, dZ2)
-    dZ1 = np.multiply(dA1, np.int64(A1 > 0))
-    dW1 = 1./m * np.dot(dZ1, X.T)
-    db1 = 1./m * np.sum(dZ1, axis=1, keepdims = True)
+    da1 = np.dot(W2.T, dz2)
+    dz1 = np.multiply(da1, np.int64(a1 > 0))
+    dW1 = np.dot(dz1, X.T)
+    db1 = np.sum(dz1, axis=1, keepdims = True)
     
-    gradients = {"dZ3": dZ3, "dW3": dW3, "db3": db3,
-                 "dA2": dA2, "dZ2": dZ2, "dW2": dW2, "db2": db2,
-                 "dA1": dA1, "dZ1": dZ1, "dW1": dW1, "db1": db1}
+    gradients = {"dz3": dz3, "dW3": dW3, "db3": db3,
+                 "da2": da2, "dz2": dz2, "dW2": dW2, "db2": db2,
+                 "da1": da1, "dz1": dz1, "dW1": dW1, "db1": db1}
     
     return gradients
 
-def update_parameters1(parameters, grads, learning_rate):
-    """
-    Update parameters using gradient descent
-    
-    Arguments:
-    parameters -- python dictionary containing your parameters:
-                    parameters['W' + str(i)] = Wi
-                    parameters['b' + str(i)] = bi
-    grads -- python dictionary containing your gradients for each parameters:
-                    grads['dW' + str(i)] = dWi
-                    grads['db' + str(i)] = dbi
-    learning_rate -- the learning rate, scalar.
-    
-    Returns:
-    parameters -- python dictionary containing your updated parameters 
-    """
-    
-    n = len(parameters) // 2 # number of layers in the neural networks
-
-    # Update rule for each parameter
-    for k in range(n):
-        parameters["W" + str(k+1)] = parameters["W" + str(k+1)] - learning_rate * grads["dW" + str(k+1)]
-        parameters["b" + str(k+1)] = parameters["b" + str(k+1)] - learning_rate * grads["db" + str(k+1)]
-        
-    return parameters
-
-def predict1(X, y, parameters):
+def predict(X, y, parameters):
     """
     This function is used to predict the results of a  n-layer neural network.
     
@@ -221,92 +721,16 @@ def predict1(X, y, parameters):
     
     return p
 
-def compute_cost1(a3, Y):
-    """
-    Implement the cost function
-    
-    Arguments:
-    a3 -- post-activation, output of forward propagation
-    Y -- "true" labels vector, same shape as a3
-    
-    Returns:
-    cost - value of the cost function
-    """
-    m = Y.shape[1]
-    
-    logprobs = np.multiply(-np.log(a3),Y) + np.multiply(-np.log(1 - a3), 1 - Y)
-    cost = 1./m * np.nansum(logprobs)
-    
-    return cost
+def load_2D_dataset():
+    data = scipy.io.loadmat('datasets/data.mat')
+    train_X = data['X'].T
+    train_Y = data['y'].T
+    test_X = data['Xval'].T
+    test_Y = data['yval'].T
 
-def load_dataset():
-    train_dataset = h5py.File('datasets/train_catvnoncat.h5', "r")
-    train_set_x_orig = np.array(train_dataset["train_set_x"][:]) # your train set features
-    train_set_y_orig = np.array(train_dataset["train_set_y"][:]) # your train set labels
-
-    test_dataset = h5py.File('datasets/test_catvnoncat.h5', "r")
-    test_set_x_orig = np.array(test_dataset["test_set_x"][:]) # your test set features
-    test_set_y_orig = np.array(test_dataset["test_set_y"][:]) # your test set labels
-
-    classes = np.array(test_dataset["list_classes"][:]) # the list of classes
+    plt.scatter(train_X[0, :], train_X[1, :], c=train_Y, s=40, cmap=plt.cm.Spectral);
     
-    train_set_y = train_set_y_orig.reshape((1, train_set_y_orig.shape[0]))
-    test_set_y = test_set_y_orig.reshape((1, test_set_y_orig.shape[0]))
-    
-    train_set_x_orig = train_set_x_orig.reshape(train_set_x_orig.shape[0], -1).T
-    test_set_x_orig = test_set_x_orig.reshape(test_set_x_orig.shape[0], -1).T
-    
-    train_set_x = train_set_x_orig/255
-    test_set_x = test_set_x_orig/255
-
-    return train_set_x, train_set_y, test_set_x, test_set_y, classes
-
-
-def predict_dec(parameters, X):
-    """
-    Used for plotting decision boundary.
-    
-    Arguments:
-    parameters -- python dictionary containing your parameters 
-    X -- input data of size (m, K)
-    
-    Returns
-    predictions -- vector of predictions of our model (red: 0 / blue: 1)
-    """
-    
-    # Predict using forward propagation and a classification threshold of 0.5
-    a3, cache = forward_propagation(X, parameters)
-    predictions = (a3>0.5)
-    return predictions
-
-def load_planar_dataset(randomness, seed):
-    
-    np.random.seed(seed)
-    
-    m = 50
-    N = int(m/2) # number of points per class
-    D = 2 # dimensionality
-    X = np.zeros((m,D)) # data matrix where each row is a single example
-    Y = np.zeros((m,1), dtype='uint8') # labels vector (0 for red, 1 for blue)
-    a = 2 # maximum ray of the flower
-
-    for j in range(2):
-        
-        ix = range(N*j,N*(j+1))
-        if j == 0:
-            t = np.linspace(j, 4*3.1415*(j+1),N) #+ np.random.randn(N)*randomness # theta
-            r = 0.3*np.square(t) + np.random.randn(N)*randomness # radius
-        if j == 1:
-            t = np.linspace(j, 2*3.1415*(j+1),N) #+ np.random.randn(N)*randomness # theta
-            r = 0.2*np.square(t) + np.random.randn(N)*randomness # radius
-            
-        X[ix] = np.c_[r*np.cos(t), r*np.sin(t)]
-        Y[ix] = j
-        
-    X = X.T
-    Y = Y.T
-
-    return X, Y
+    return train_X, train_Y, test_X, test_Y
 
 def plot_decision_boundary(model, X, y):
     # Set min and max values and give it some padding
@@ -325,347 +749,41 @@ def plot_decision_boundary(model, X, y):
     plt.scatter(X[0, :], X[1, :], c=y, cmap=plt.cm.Spectral)
     plt.show()
     
-def load_2D_dataset():
-    data = scipy.io.loadmat('datasets/data.mat')
-    train_X = data['X'].T
-    train_Y = data['y'].T
-    test_X = data['Xval'].T
-    test_Y = data['yval'].T
-
-    plt.scatter(train_X[0, :], train_X[1, :], c=train_Y, s=40, cmap=plt.cm.Spectral);
+def predict_dec(parameters, X):
+    """
+    Used for plotting decision boundary.
     
-    return train_X, train_Y, test_X, test_Y
-
-
-
-
-
-
-
-
-
-
-def compute_cost_with_regularization_test_case():
-    np.random.seed(1)
-    Y_assess = np.array([[1, 1, 0, 1, 0]])
-    W1 = np.random.randn(2, 3)
-    b1 = np.random.randn(2, 1)
-    W2 = np.random.randn(3, 2)
-    b2 = np.random.randn(3, 1)
-    W3 = np.random.randn(1, 3)
-    b3 = np.random.randn(1, 1)
-    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2, "W3": W3, "b3": b3}
-    a3 = np.array([[ 0.40682402,  0.01629284,  0.16722898,  0.10118111,  0.40682402]])
-    return a3, Y_assess, parameters
-
-def backward_propagation_with_regularization_test_case():
-    np.random.seed(1)
-    X_assess = np.random.randn(3, 5)
-    Y_assess = np.array([[1, 1, 0, 1, 0]])
-    cache = (np.array([[-1.52855314,  3.32524635,  2.13994541,  2.60700654, -0.75942115],
-         [-1.98043538,  4.1600994 ,  0.79051021,  1.46493512, -0.45506242]]),
-  np.array([[ 0.        ,  3.32524635,  2.13994541,  2.60700654,  0.        ],
-         [ 0.        ,  4.1600994 ,  0.79051021,  1.46493512,  0.        ]]),
-  np.array([[-1.09989127, -0.17242821, -0.87785842],
-         [ 0.04221375,  0.58281521, -1.10061918]]),
-  np.array([[ 1.14472371],
-         [ 0.90159072]]),
-  np.array([[ 0.53035547,  5.94892323,  2.31780174,  3.16005701,  0.53035547],
-         [-0.69166075, -3.47645987, -2.25194702, -2.65416996, -0.69166075],
-         [-0.39675353, -4.62285846, -2.61101729, -3.22874921, -0.39675353]]),
-  np.array([[ 0.53035547,  5.94892323,  2.31780174,  3.16005701,  0.53035547],
-         [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ],
-         [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ]]),
-  np.array([[ 0.50249434,  0.90085595],
-         [-0.68372786, -0.12289023],
-         [-0.93576943, -0.26788808]]),
-  np.array([[ 0.53035547],
-         [-0.69166075],
-         [-0.39675353]]),
-  np.array([[-0.3771104 , -4.10060224, -1.60539468, -2.18416951, -0.3771104 ]]),
-  np.array([[ 0.40682402,  0.01629284,  0.16722898,  0.10118111,  0.40682402]]),
-  np.array([[-0.6871727 , -0.84520564, -0.67124613]]),
-  np.array([[-0.0126646]]))
-    return X_assess, Y_assess, cache
-
-def forward_propagation_with_dropout_test_case():
-    np.random.seed(1)
-    X_assess = np.random.randn(3, 5)
-    W1 = np.random.randn(2, 3)
-    b1 = np.random.randn(2, 1)
-    W2 = np.random.randn(3, 2)
-    b2 = np.random.randn(3, 1)
-    W3 = np.random.randn(1, 3)
-    b3 = np.random.randn(1, 1)
-    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2, "W3": W3, "b3": b3}
+    Arguments:
+    parameters -- python dictionary containing your parameters 
+    X -- input data of size (m, K)
     
-    return X_assess, parameters
-
-def backward_propagation_with_dropout_test_case():
-    np.random.seed(1)
-    X_assess = np.random.randn(3, 5)
-    Y_assess = np.array([[1, 1, 0, 1, 0]])
-    cache = (np.array([[-1.52855314,  3.32524635,  2.13994541,  2.60700654, -0.75942115],
-           [-1.98043538,  4.1600994 ,  0.79051021,  1.46493512, -0.45506242]]), np.array([[ True, False,  True,  True,  True],
-           [ True,  True,  True,  True, False]], dtype=bool), np.array([[ 0.        ,  0.        ,  4.27989081,  5.21401307,  0.        ],
-           [ 0.        ,  8.32019881,  1.58102041,  2.92987024,  0.        ]]), np.array([[-1.09989127, -0.17242821, -0.87785842],
-           [ 0.04221375,  0.58281521, -1.10061918]]), np.array([[ 1.14472371],
-           [ 0.90159072]]), np.array([[ 0.53035547,  8.02565606,  4.10524802,  5.78975856,  0.53035547],
-           [-0.69166075, -1.71413186, -3.81223329, -4.61667916, -0.69166075],
-           [-0.39675353, -2.62563561, -4.82528105, -6.0607449 , -0.39675353]]), np.array([[ True, False,  True, False,  True],
-           [False,  True, False,  True,  True],
-           [False, False,  True, False, False]], dtype=bool), np.array([[ 1.06071093,  0.        ,  8.21049603,  0.        ,  1.06071093],
-           [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ],
-           [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ]]), np.array([[ 0.50249434,  0.90085595],
-           [-0.68372786, -0.12289023],
-           [-0.93576943, -0.26788808]]), np.array([[ 0.53035547],
-           [-0.69166075],
-           [-0.39675353]]), np.array([[-0.7415562 , -0.0126646 , -5.65469333, -0.0126646 , -0.7415562 ]]), np.array([[ 0.32266394,  0.49683389,  0.00348883,  0.49683389,  0.32266394]]), np.array([[-0.6871727 , -0.84520564, -0.67124613]]), np.array([[-0.0126646]]))
-
-
-    return X_assess, Y_assess, cache
+    Returns
+    predictions -- vector of predictions of our model (red: 0 / blue: 1)
+    """
     
+    # Predict using forward propagation and a classification threshold of 0.5
+    a3, cache = forward_propagation(X, parameters)
+    predictions = (a3 > 0.5)
+    return predictions
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-def compute_cost_with_regularization_test(target):
-    np.random.seed(1)
-    Y = np.array([[1, 1, 0, 1, 0]])
-    W1 = np.random.randn(2, 3)
-    b1 = np.random.randn(2, 1)
-    W2 = np.random.randn(3, 2)
-    b2 = np.random.randn(3, 1)
-    W3 = np.random.randn(1, 3)
-    b3 = np.random.randn(1, 1)
-    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2, "W3": W3, "b3": b3}
-    A3 = np.array([[ 0.40682402,  0.01629284,  0.16722898,  0.10118111,  0.40682402]])
-    lambd = 0.1
-    expected_output = np.float64(1.7864859451590758)
-    test_cases = [
-        {
-            "name": "shape_check",
-            "input": [A3, Y, parameters, lambd],
-            "expected": expected_output,
-            "error": "Wrong shape"
-        },
-        {
-            "name": "equation_output_check",
-            "input": [A3, Y, parameters, lambd],
-            "expected": expected_output,
-            "error": "Wrong output"
-        }
-    ]
+def load_dataset():
+    np.random.seed(3)
+    train_X, train_Y = sklearn.datasets.make_moons(n_samples=300, noise=.2) #300 #0.2 
+    # Visualize the data
+    plt.scatter(train_X[:, 0], train_X[:, 1], c=train_Y, s=40, cmap=plt.cm.Spectral);
+    train_X = train_X.T
+    train_Y = train_Y.reshape((1, train_Y.shape[0]))
     
-    single_test(test_cases, target)
-    
-def backward_propagation_with_regularization_test(target):
-    np.random.seed(1)
-    X = np.random.randn(3, 5)
-    Y = np.array([[1, 1, 0, 1, 0]])
-    cache = (np.array([[-1.52855314,  3.32524635,  2.13994541,  2.60700654, -0.75942115],
-         [-1.98043538,  4.1600994 ,  0.79051021,  1.46493512, -0.45506242]]),
-  np.array([[ 0.        ,  3.32524635,  2.13994541,  2.60700654,  0.        ],
-         [ 0.        ,  4.1600994 ,  0.79051021,  1.46493512,  0.        ]]),
-  np.array([[-1.09989127, -0.17242821, -0.87785842],
-         [ 0.04221375,  0.58281521, -1.10061918]]),
-  np.array([[ 1.14472371],
-         [ 0.90159072]]),
-  np.array([[ 0.53035547,  5.94892323,  2.31780174,  3.16005701,  0.53035547],
-         [-0.69166075, -3.47645987, -2.25194702, -2.65416996, -0.69166075],
-         [-0.39675353, -4.62285846, -2.61101729, -3.22874921, -0.39675353]]),
-  np.array([[ 0.53035547,  5.94892323,  2.31780174,  3.16005701,  0.53035547],
-         [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ],
-         [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ]]),
-  np.array([[ 0.50249434,  0.90085595],
-         [-0.68372786, -0.12289023],
-         [-0.93576943, -0.26788808]]),
-  np.array([[ 0.53035547],
-         [-0.69166075],
-         [-0.39675353]]),
-  np.array([[-0.3771104 , -4.10060224, -1.60539468, -2.18416951, -0.3771104 ]]),
-  np.array([[ 0.40682402,  0.01629284,  0.16722898,  0.10118111,  0.40682402]]),
-  np.array([[-0.6871727 , -0.84520564, -0.67124613]]),
-  np.array([[-0.0126646]]))
-    lambd = 0.7
-    
-    expected_output = {'dZ3': np.array([[-0.59317598, -0.98370716,  0.16722898, -0.89881889,  0.40682402]]),
- 'dW3': np.array([[-1.77691347, -0.11832879, -0.09397446]]),
- 'db3': np.array([[-0.38032981]]),
- 'dA2': np.array([[ 0.40761434,  0.67597671, -0.11491519,  0.6176438 , -0.27955836],
-        [ 0.50135568,  0.83143484, -0.14134288,  0.7596868 , -0.34384996],
-        [ 0.39816708,  0.66030962, -0.11225181,  0.6033287 , -0.27307905]]),
- 'dZ2': np.array([[ 0.40761434,  0.67597671, -0.11491519,  0.6176438 , -0.27955836],
-        [ 0.        ,  0.        , -0.        ,  0.        , -0.        ],
-        [ 0.        ,  0.        , -0.        ,  0.        , -0.        ]]),
- 'dW2': np.array([[ 0.79276486,  0.85133918],
-        [-0.0957219 , -0.01720463],
-        [-0.13100772, -0.03750433]]),
- 'db2': np.array([[0.26135226],
-        [0.        ],
-        [0.        ]]),
- 'dA1': np.array([[ 0.2048239 ,  0.33967447, -0.05774423,  0.31036252, -0.14047649],
-        [ 0.3672018 ,  0.60895764, -0.10352203,  0.5564081 , -0.25184181]]),
- 'dZ1': np.array([[ 0.        ,  0.33967447, -0.05774423,  0.31036252, -0.        ],
-        [ 0.        ,  0.60895764, -0.10352203,  0.5564081 , -0.        ]]),
- 'dW1': np.array([[-0.25604646,  0.12298827, -0.28297129],
-        [-0.17706303,  0.34536094, -0.4410571 ]]),
- 'db1': np.array([[0.11845855],
-        [0.21236874]])}
-    test_cases = [
-        {
-            "name": "shape_check",
-            "input": [X, Y, cache, lambd],
-            "expected": expected_output,
-            "error": "Wrong shape"
-        },
-        {
-            "name": "equation_output_check",
-            "input": [X, Y, cache, lambd],
-            "expected": expected_output,
-            "error": "Wrong output"
-        }
-    ]
-    
-    multiple_test(test_cases, target)
-    
-def forward_propagation_with_dropout_test(target):
-    np.random.seed(1)
-    X = np.random.randn(3, 5)
-    W1 = np.random.randn(2, 3)
-    b1 = np.random.randn(2, 1)
-    W2 = np.random.randn(3, 2)
-    b2 = np.random.randn(3, 1)
-    W3 = np.random.randn(1, 3)
-    b3 = np.random.randn(1, 1)
-    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2, "W3": W3, "b3": b3}
-    
-    A3 = np.array([[0.36974721, 0.00305176, 0.04565099, 0.49683389, 0.36974721]])
-    cache = (np.array([[-1.52855314,  3.32524635,  2.13994541,  2.60700654, -0.75942115],
-        [-1.98043538,  4.1600994 ,  0.79051021,  1.46493512, -0.45506242]]),
- np.array([[ True, False,  True,  True,  True],
-        [ True,  True,  True,  True,  True]]),
- np.array([[0.        , 0.        , 3.05706487, 3.72429505, 0.        ],
-        [0.        , 5.94299915, 1.1293003 , 2.09276446, 0.        ]]),
- np.array([[-1.09989127, -0.17242821, -0.87785842],
-        [ 0.04221375,  0.58281521, -1.10061918]]),
- np.array([[1.14472371],
-        [0.90159072]]),
- np.array([[ 0.53035547,  5.88414161,  3.08385015,  4.28707196,  0.53035547],
-        [-0.69166075, -1.42199726, -2.92064114, -3.49524533, -0.69166075],
-        [-0.39675353, -1.98881216, -3.55998747, -4.44246165, -0.39675353]]),
- np.array([[ True,  True,  True, False,  True],
-        [ True,  True,  True,  True,  True],
-        [False, False,  True,  True, False]]),
- np.array([[0.75765067, 8.40591658, 4.40550021, 0.        , 0.75765067],
-        [0.        , 0.        , 0.        , 0.        , 0.        ],
-        [0.        , 0.        , 0.        , 0.        , 0.        ]]),
- np.array([[ 0.50249434,  0.90085595],
-        [-0.68372786, -0.12289023],
-        [-0.93576943, -0.26788808]]),
- np.array([[ 0.53035547],
-        [-0.69166075],
-        [-0.39675353]]),
- np.array([[-0.53330145, -5.78898099, -3.04000407, -0.0126646 , -0.53330145]]),
- np.array([[0.36974721, 0.00305176, 0.04565099, 0.49683389, 0.36974721]]),
- np.array([[-0.6871727 , -0.84520564, -0.67124613]]),
- np.array([[-0.0126646]]))
-    keep_prob = 0.7
-    expected_output = (A3, cache)
-    test_cases = [
-        #{
-        #    "name":"datatype_check",
-        #    "input": [X, parameters, keep_prob],
-        #    "expected": expected_output,
-        #    "error":"Datatype mismatch"
-        #},
-        {
-            "name": "shape_check",
-            "input": [X, parameters, keep_prob],
-            "expected": expected_output,
-            "error": "Wrong shape"
-        },
-        {
-            "name": "equation_output_check",
-            "input": [X, parameters, keep_prob],
-            "expected": expected_output,
-            "error": "Wrong output"
-        }
-    ]
-    
-    multiple_test(test_cases, target)
-    
-def backward_propagation_with_dropout_test(target):
-    np.random.seed(1)
-    X = np.random.randn(3, 5)
-    Y = np.array([[1, 1, 0, 1, 0]])
-    cache = (np.array([[-1.52855314,  3.32524635,  2.13994541,  2.60700654, -0.75942115],
-           [-1.98043538,  4.1600994 ,  0.79051021,  1.46493512, -0.45506242]]), np.array([[ True, False,  True,  True,  True],
-           [ True,  True,  True,  True, False]], dtype=bool), np.array([[ 0.        ,  0.        ,  4.27989081,  5.21401307,  0.        ],
-           [ 0.        ,  8.32019881,  1.58102041,  2.92987024,  0.        ]]), np.array([[-1.09989127, -0.17242821, -0.87785842],
-           [ 0.04221375,  0.58281521, -1.10061918]]), np.array([[ 1.14472371],
-           [ 0.90159072]]), np.array([[ 0.53035547,  8.02565606,  4.10524802,  5.78975856,  0.53035547],
-           [-0.69166075, -1.71413186, -3.81223329, -4.61667916, -0.69166075],
-           [-0.39675353, -2.62563561, -4.82528105, -6.0607449 , -0.39675353]]), np.array([[ True, False,  True, False,  True],
-           [False,  True, False,  True,  True],
-           [False, False,  True, False, False]], dtype=bool), np.array([[ 1.06071093,  0.        ,  8.21049603,  0.        ,  1.06071093],
-           [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ],
-           [ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ]]), np.array([[ 0.50249434,  0.90085595],
-           [-0.68372786, -0.12289023],
-           [-0.93576943, -0.26788808]]), np.array([[ 0.53035547],
-           [-0.69166075],
-           [-0.39675353]]), np.array([[-0.7415562 , -0.0126646 , -5.65469333, -0.0126646 , -0.7415562 ]]), np.array([[ 0.32266394,  0.49683389,  0.00348883,  0.49683389,  0.32266394]]), np.array([[-0.6871727 , -0.84520564, -0.67124613]]), np.array([[-0.0126646]]))
-    keep_prob = 0.8
-    
-    expected_output = {'dZ3': np.array([[-0.67733606, -0.50316611,  0.00348883, -0.50316611,  0.32266394]]),
- 'dW3': np.array([[-0.06951191,  0.        ,  0.        ]]),
- 'db3': np.array([[-0.2715031]]),
- 'dA2': np.array([[ 0.58180856,  0.        , -0.00299679,  0.        , -0.27715731],
-        [ 0.        ,  0.53159854, -0.        ,  0.53159854, -0.34089673],
-        [ 0.        ,  0.        , -0.00292733,  0.        , -0.        ]]),
- 'dZ2': np.array([[ 0.58180856,  0.        , -0.00299679,  0.        , -0.27715731],
-        [ 0.        ,  0.        , -0.        ,  0.        , -0.        ],
-        [ 0.        ,  0.        , -0.        ,  0.        , -0.        ]]),
- 'dW2': np.array([[-0.00256518, -0.0009476 ],
-        [ 0.        ,  0.        ],
-        [ 0.        ,  0.        ]]),
- 'db2': np.array([[0.06033089],
-        [0.        ],
-        [0.        ]]),
- 'dA1': np.array([[ 0.36544439,  0.        , -0.00188233,  0.        , -0.17408748],
-        [ 0.65515713,  0.        , -0.00337459,  0.        , -0.        ]]),
- 'dZ1': np.array([[ 0.        ,  0.        , -0.00188233,  0.        , -0.        ],
-        [ 0.        ,  0.        , -0.00337459,  0.        , -0.        ]]),
- 'dW1': np.array([[0.00019884, 0.00028657, 0.00012138],
-        [0.00035647, 0.00051375, 0.00021761]]),
- 'db1': np.array([[-0.00037647],
-        [-0.00067492]])}
-    
-    test_cases = [
-        {
-            "name": "shape_check",
-            "input": [X, Y, cache, keep_prob],
-            "expected": expected_output,
-            "error": "Wrong shape"
-        },
-        {
-            "name": "equation_output_check",
-            "input": [X, Y, cache, keep_prob],
-            "expected": expected_output,
-            "error": "Wrong output"
-        }
-    ]
-    
-    multiple_test(test_cases, target)
+    return train_X, train_Y
+
+
+
+
+
+
+
+
+
+
 
 
