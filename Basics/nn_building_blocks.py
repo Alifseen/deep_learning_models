@@ -3,9 +3,10 @@ import copy
 import math
 
 
-def initialize_parameters(layer_dims):
+def initialize_parameters(layer_dims, seed=None):
 
-    # np.random.seed(3)
+    if seed is not None:
+        np.random.seed(seed)
     
     parameters = {}
     
@@ -20,9 +21,10 @@ def initialize_parameters(layer_dims):
     
     return parameters
 
-def initialize_parameters_xavier(layer_dims):
+def initialize_parameters_xavier(layer_dims, seed=None):
 
-    # np.random.seed(3)
+    if seed is not None:
+        np.random.seed(seed)
     
     parameters = {}
     L = len(layer_dims)            
@@ -38,9 +40,10 @@ def initialize_parameters_xavier(layer_dims):
     return parameters
 
 
-def initialize_parameters_he(layers_dims):
+def initialize_parameters_he(layers_dims, seed=None):
     
-    np.random.seed(3)
+    if seed is not None:
+        np.random.seed(seed)
 
     parameters = {}
     L = len(layers_dims)
@@ -84,15 +87,20 @@ def linear_activation_forward(A_prev, W, b, activation):
     if activation == "sigmoid":
         Z = linear_forward(A_prev, W, b)
         A = sigmoid(Z)
-    if activation == "relu":
+    elif activation == "relu":
         Z = linear_forward(A_prev, W, b)
         A = relu(Z)
+    elif activation == "tanh":
+        Z = linear_forward(A_prev, W, b)
+        A = np.tanh(Z)
+    else:
+        raise ValueError(f"Unsupported activation function: {activation}")
     cache = (Z, A_prev, W, b)
     
     return A, cache
 
 
-def forward_propagation(X, parameters):
+def forward_propagation(X, parameters, hidden_activation="relu", output_activation="sigmoid"):
 
     '''
     cache order = (Z1, A1, W1, b1, Z2, A2, W2, b2......ZL, AL, WL, bL)
@@ -105,13 +113,13 @@ def forward_propagation(X, parameters):
     if L > 1:
         for l in range(1, L):
             A_prev = A
-            A, cache = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], "relu")
+            A, cache = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], hidden_activation)
             caches += cache[0], A, cache[2], cache[3]
     
-        AL, cacheL = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], "sigmoid")
+        AL, cacheL = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], output_activation)
         caches += cacheL[0], AL, cacheL[2], cacheL[3]
     else:
-        AL, cacheL = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], "sigmoid")
+        AL, cacheL = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], output_activation)
         caches += cacheL[0], AL, cacheL[2], cacheL[3]
     
     return AL, caches
@@ -121,6 +129,9 @@ def forward_propagation(X, parameters):
 ##############################################################################################################################
 
 def compute_cost_log_loss(AL, Y):
+    AL = np.clip(AL, 1e-15, 1 - 1e-15)
+    Y = Y.reshape(1, -1)
+
     m = Y.shape[1]
 
     j = -(1/m) * np.sum((Y*np.log(AL)) + ((1-Y)*np.log(1-AL)))
@@ -129,20 +140,13 @@ def compute_cost_log_loss(AL, Y):
     
     return j
 
-def compute_batch_cost(AL, Y):
-    m = Y.shape[1]
-
-    j = -np.sum((Y*np.log(AL)) + ((1-Y)*np.log(1-AL)))
+def compute_cost_with_regularization(AL, Y, parameters, lambd):
+    AL = np.clip(AL, 1e-15, 1 - 1e-15)
+    Y = Y.reshape(1, -1)
     
-    j = np.squeeze(j)
-    
-    return j
-
-
-def compute_cost_with_regularization(al, Y, parameters, lambd):
     m = Y.shape[1]
     L = len(parameters) // 2
-    cross_entropy_cost = compute_cost_log_loss(al, Y)
+    cross_entropy_cost = compute_cost_log_loss(AL, Y)
     L2_regularization_cost = 0
 
     for l in range(1, L+1):
@@ -152,6 +156,36 @@ def compute_cost_with_regularization(al, Y, parameters, lambd):
     
     cost = cross_entropy_cost + L2_regularization_cost
     return cost
+
+def compute_batch_cost(AL, Y):
+    AL = np.clip(AL, 1e-15, 1 - 1e-15)
+    Y = Y.reshape(1, -1)
+    
+    m = Y.shape[1]
+
+    j = -np.sum((Y*np.log(AL)) + ((1-Y)*np.log(1-AL)))
+    
+    j = np.squeeze(j)
+    
+    return j
+
+def compute_batch_cost_regularization(AL, Y, parameters, lambd):
+    AL = np.clip(AL, 1e-15, 1 - 1e-15)
+    Y = Y.reshape(1, -1)
+    
+    m = Y.shape[1]
+    L = len(parameters) // 2
+    cross_entropy_cost = compute_batch_cost(AL, Y)
+    L2_regularization_cost = 0
+
+    for l in range(1, L+1):
+        L2_regularization_cost += np.sum(np.square(parameters["W"+str(l)]))
+
+    L2_regularization_cost = (lambd/2)*L2_regularization_cost
+    
+    cost = cross_entropy_cost + L2_regularization_cost
+    return cost
+
 
     
     
@@ -173,27 +207,36 @@ def sigmoid_backwards(dA, Z):
     assert (dZ.shape == Z.shape)
     return dZ
 
-
 def relu_backwards(dA, Z):
     dZ = np.array(dA, copy=True)
     dZ[Z <= 0] = 0
     assert (dZ.shape == Z.shape)
     return dZ
+    
+def tanh_backwards(dA, Z):
+    A = np.tanh(Z)
+    dZ = dA * (1-np.square(A))
+    assert (dZ.shape == Z.shape)
+    return dZ
 
-
+    
 def linear_activation_backward(dA, Z, A_prev, W, b, activation, lambd):
 
     if activation == "relu":
         dZ = relu_backwards(dA, Z)
         dA_prev, dW, db = linear_backward(dZ, A_prev, W, b, lambd)
-    if activation == "sigmoid":
+    elif activation == "sigmoid":
         dZ = sigmoid_backwards(dA, Z)
-        dA_prev, dW, db = linear_backward(dZ, A_prev, W, b)
+        dA_prev, dW, db = linear_backward(dZ, A_prev, W, b, lambd)
+    elif activation == "tanh":
+        dZ = tanh_backwards(dA, Z)
+        dA_prev, dW, db = linear_backward(dZ, A_prev, W, b, lambd)
+    
 
     return dA_prev, dW, db
 
     
-def backward_propagation(X, Y, caches, lambd=0):
+def backward_propagation(X, Y, caches, hidden_activation="relu", lambd=0):
 
     '''
     cache order = (Z1, A1, W1, b1, Z2, A2, W2, b2......ZL, AL, WL, bL)
@@ -235,12 +278,13 @@ def backward_propagation(X, Y, caches, lambd=0):
             else:
                 A_prev = X
             
-            dA_prev, dWl, dbl = linear_activation_backward(dAl, Zl, A_prev, Wl, bl, "relu", lambd)
+            dA_prev, dWl, dbl = linear_activation_backward(dAl, Zl, A_prev, Wl, bl, hidden_activation, lambd)
             # grads["dA" + str(l)] = dA_prev_temp
             grads["dW" + str(l+1)] = dWl
             grads["db" + str(l+1)] = dbl
     else:
-        dA_prev = np.dot(W.T, dZL)
+        WL = caches[-2]
+        dA_prev = np.dot(WL.T, dZL)
         dWL = (1/m) * np.dot(dZL, X.T) + ((lambd/m)*WL)
         dbL = (1/m) * np.sum(dZL, axis=1, keepdims=True)
         
@@ -267,7 +311,7 @@ def update_parameters(params, grads, learning_rate):
 
 ##############################################################################################################################
 
-def predict(X, y, parameters):
+def predict(X, y, parameters, print_accuracy=True):
     m = X.shape[1]
     n = len(parameters) // 2 
     p = np.zeros((1,m))
@@ -279,8 +323,8 @@ def predict(X, y, parameters):
             p[0,i] = 1
         else:
             p[0,i] = 0
-
-    print("Accuracy: "  + str(np.sum((p == y)/m)))
+    if print_accuracy:
+        print("Accuracy: "  + str(np.sum((p == y)/m)))
         
     return p
 
@@ -291,30 +335,30 @@ def predict(X, y, parameters):
 
 def linear_activation_forward_dropout(A_prev, W, b, activation, keep_prob):
 
-    '''
-    cache order = (Z1, A1, W1, b1, Z2, A2, W2, b2......ZL, AL, WL, bL)
-    '''
-
-    if activation == "sigmoid":
-        Z, linear_cache = linear_forward(A_prev, W, b)
-        A, activation_cache = sigmoid(Z)
-        # D = np.random.rand(*A.shape)
-        # mask = (D < keep_prob).astype(int)
-        # A = (A*mask)/keep_prob
-        mask = None
+    Z = linear_forward(A_prev, W, b)
+    linear_cache = A_prev, W, b
+    activation_cache = Z
+    
     if activation == "relu":
-        Z, linear_cache = linear_forward(A_prev, W, b)
-        A, activation_cache = relu(Z)
+        A = relu(Z)
         D = np.random.rand(*A.shape)
         mask = (D < keep_prob).astype(int)
         A = (A*mask)/keep_prob
+    elif activation == "tanh":
+        A = np.tanh(Z)
+        D = np.random.rand(*A.shape)
+        mask = (D < keep_prob).astype(int)
+        A = (A*mask)/keep_prob
+        
+    else:
+        raise ValueError(f"Unsupported activation function: {activation}")
+    
     cache = (linear_cache, activation_cache, mask)
     
     return A, cache
 
-def forward_propagation_with_dropout(X, parameters, keep_prob = 1):
+def forward_propagation_with_dropout(X, parameters, hidden_activation="relu", output_activation="sigmoid", keep_prob=1):
 
-    np.random.seed(1)
     L = len(parameters)//2
     caches = []
     A = X
@@ -322,58 +366,49 @@ def forward_propagation_with_dropout(X, parameters, keep_prob = 1):
     
     for l in range(1,L):
         A_prev = A
-        A, cache = linear_activation_forward_dropout(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], "relu", keep_prob)
+        A, cache = linear_activation_forward_dropout(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], hidden_activation, keep_prob)
         caches.append(cache)
 
-    AL, cache = linear_activation_forward_dropout(A, parameters["W"+str(L)], parameters["b"+str(L)], "sigmoid", keep_prob)
+    AL, cache = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], output_activation)
     caches.append(cache)
     
     return AL, caches
     
 def linear_activation_backward_dropout(dA, cache, activation, keep_prob=1):
     linear_cache, activation_cache, mask = cache
+    A_prev, W, b = linear_cache
 
+    dA = (dA * mask) / keep_prob
+    
     if activation == "relu":
         dZ = relu_backwards(dA, activation_cache)
-        dA_prev, dW, db = linear_backward(dZ, linear_cache)
-        dA_prev = (dA_prev * mask) / keep_prob
-    if activation == "sigmoid":
-        dZ = sigmoid_backwards(dA, activation_cache)
-        dA_prev, dW, db = linear_backward(dZ, linear_cache)
+    elif activation == "tanh":
+        dZ = tanh_backwards(dA, activation_cache)
+        
+    dA_prev, dW, db = linear_backward(dZ, A_prev, W, b, lambd=0)
 
     return dA_prev, dW, db
     
-def backward_propagation_with_dropout(X, Y, caches, keep_prob, AL):
+def backward_propagation_with_dropout(X, Y, caches, keep_prob, AL, hidden_activation="relu"):
     grads = {}
     L = len(caches)
     m = X.shape[1]
     Y = Y.reshape(AL.shape)
     
     dZL = (AL-Y)
-    current_cacheL = caches[-1]
-    linear_cache, activation_cache, D3 = current_cacheL
-    _, _, D2 = caches[-2]
-    A_prev_L, WL, bL = linear_cache
-
-    dA_prev_temp = np.dot(WL.T, dZL)
-    dW_temp = (1/m) * np.dot(dZL, A_prev_L.T)
-    db_temp = (1/m) * np.sum(dZL, axis=1, keepdims=True)
-    dA_prev_temp = (dA_prev_temp*D2)/keep_prob
-    grads["dA" + str(L-1)] = dA_prev_temp
-    grads["dW" + str(L)] = dW_temp 
-    grads["db" + str(L)] = db_temp
+    
+    current_cache = caches[L-1]
+    ZL, A_prev_L, WL, bL = current_cache
+    
+    grads["dA" + str(L-1)], grads["dW" + str(L)], grads["db" + str(L)] = linear_backward(dZL, A_prev_L, WL, bL, lambd=0)
 
     
     for l in reversed(range(L-1)):
-        dA_prev = dA_prev_temp
-        linear_cache, activation_cache, mask  = caches[l]
-        _,_,Dl  = caches[l-1]
-        # print(activation_cache.shape)
-        if l > 0:
-            dA_prev_temp, dW_temp, db_temp = linear_activation_backward_dropout(dA_prev, (linear_cache, activation_cache, Dl), "relu", keep_prob)
-        else:
-            dA_prev_temp, dW_temp, db_temp = linear_activation_backward(dA_prev, (linear_cache, activation_cache), "relu")
-        
+        dA_current = grads["dA" + str(l+1)]
+        current_cache   = caches[l]
+
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward_dropout(dA_current, current_cache, hidden_activation, keep_prob)
+                    
         grads["dA" + str(l)] = dA_prev_temp
         grads["dW" + str(l+1)] = dW_temp
         grads["db" + str(l+1)] = db_temp
@@ -385,7 +420,7 @@ def backward_propagation_with_dropout(X, Y, caches, keep_prob, AL):
 ##############################################################################################################################
 
 
-def gradient_checking(parameters, gradients, X, Y, epsilon=1e-7, print_msg=False):
+def gradient_checking(parameters, gradients, X, Y, epsilon=1e-7, print_msg=False, hidden_activation="relu", output_activation="sigmoid"):
     parameters_values, keys = dictionary_to_vector(parameters)
     grad = gradients_to_vector(gradients)
 
@@ -398,11 +433,11 @@ def gradient_checking(parameters, gradients, X, Y, epsilon=1e-7, print_msg=False
     for i in range(num_parameters):
         theta_plus = np.copy(parameters_values)
         theta_plus[i] += epsilon
-        J_plus[i], _ = gradient_checking_forward_propagation(X, Y, vector_to_dictionary(theta_plus,parameters))
+        J_plus[i], _ = gradient_checking_forward_propagation(X, Y, vector_to_dictionary(theta_plus,parameters), hidden_activation, output_activation)
 
         theta_minus = np.copy(parameters_values)
         theta_minus[i] -=  epsilon
-        J_minus[i], _ = gradient_checking_forward_propagation(X, Y, vector_to_dictionary(theta_minus,parameters))
+        J_minus[i], _ = gradient_checking_forward_propagation(X, Y, vector_to_dictionary(theta_minus,parameters), hidden_activation, output_activation)
 
         gradapprox[i] = (J_plus[i]-J_minus[i]) / (2*epsilon)
 
@@ -441,7 +476,8 @@ def vector_to_dictionary(theta, shape_reference):
 def gradients_to_vector(gradients):
     
     theta = []
-    L = len(gradients) // 2
+    dW_keys = [key for key in gradients.keys() if key.startswith('dW')]
+    L = len(dW_keys)
 
     for l in range(1, L + 1):
         
@@ -474,7 +510,7 @@ def dictionary_to_vector(parameters):
 
 
 
-def gradient_checking_forward_propagation(X, Y, parameters):
+def gradient_checking_forward_propagation(X, Y, parameters, hidden_activation="relu", output_activation="sigmoid"):
     '''
     cache order = (Z1, A1, W1, b1, Z2, A2, W2, b2......ZL, AL, WL, bL)
     '''
@@ -486,10 +522,10 @@ def gradient_checking_forward_propagation(X, Y, parameters):
 
     for l in range(1, L):
         A_prev = A
-        A, cache = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], "relu")
+        A, cache = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)], hidden_activation)
         caches += cache[0], A, cache[2], cache[3]
 
-    AL, cacheL = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], "sigmoid")
+    AL, cacheL = linear_activation_forward(A, parameters["W"+str(L)], parameters["b"+str(L)], output_activation)
     caches += cacheL[0], AL, cacheL[2], cacheL[3]
 
     cost = compute_cost_log_loss(AL, Y)
@@ -618,6 +654,158 @@ def schedule_lr_decay(learning_r, epoch, decay_rate, time_interval=1000):
 
 
 
+################################################## The Model #####################################################################
+
+
+def model(X, Y, layers_dims, 
+                        optimizer="gd", learning_rate = 0.0007, num_epochs = 5000,
+                        momentum_beta = 0.9, adam_beta1 = 0.9, adam_beta2 = 0.999,  epsilon = 1e-8,
+                        init="random", hidden_activation="relu", output_activation="sigmoid",
+                        lambd=0, keep_probs=1, mini_batch_size = None,
+                        decay=None, decay_rate=1, 
+                        print_cost = False, seed=None, check_gradient=False):
+
+    assert(lambd ==0 or keep_probs==1)
+    if seed is not None:
+        np.random.seed(seed)
+
+    
+    L = len(layers_dims)             
+    costs = []                       
+    t = 0                            
+    m = X.shape[1]                  
+    lr_rates = []
+    learning_rate0 = learning_rate
+    batch_seed = 10
+    
+    
+    
+    if init == "random":
+        parameters = initialize_parameters(layers_dims, seed)
+    elif init == "he":
+        parameters = initialize_parameters_he(layers_dims, seed)
+    elif init == "xavier":
+        parameters = initialize_parameters_xavier(layers_dims, seed)
+
+    
+    
+    if optimizer != "momentum" and optimizer != "adam":
+        pass 
+    elif optimizer == "momentum":
+        v = initialize_velocity(parameters)
+    elif optimizer == "adam":
+        v, s = initialize_adam(parameters)
+
+    if mini_batch_size is not None:
+        for i in range(num_epochs):
+            
+            batch_seed = batch_seed + 1
+            minibatches = random_mini_batches(X, Y, mini_batch_size, batch_seed)
+            cost_total = 0
+
+            for k, minibatch in enumerate(minibatches):
+                
+                (minibatch_X, minibatch_Y) = minibatch
+                
+                if keep_probs == 1:
+                    al, caches = forward_propagation(minibatch_X, parameters, hidden_activation, output_activation)
+                elif keep_probs < 1:
+                    al, caches = forward_propagation_with_dropout(minibatch_X, parameters, hidden_activation, output_activation, keep_probs)
+                
+                if lambd == 0:
+                    cost_total += compute_batch_cost(al, minibatch_Y)
+                elif lambd > 0:
+                    cost_total += compute_batch_cost_regularization(al, minibatch_Y, parameters, lambd)
+        
+                if lambd >= 0 and keep_probs == 1:
+                    grads = backward_propagation(minibatch_X, minibatch_Y, caches, hidden_activation, lambd)
+                elif keep_probs < 1:
+                    grads = backward_propagation_with_dropout(minibatch_X, minibatch_Y, caches, keep_probs, al, hidden_activation)
+                
+
+                if check_gradient and (i % 1000 == 0 or i==num_epochs-1) and k == 0:
+                    difference = gradient_checking(parameters, grads, minibatch_X, minibatch_Y, 1e-7, False, hidden_activation, output_activation)
+                    print(f"Gradient check difference for minibatch {k} is {difference}")
+                
+                    
+                if optimizer != "momentum" and optimizer != "adam":
+                    parameters = update_parameters(parameters, grads, learning_rate)
+                elif optimizer == "momentum":
+                    parameters, v = update_parameters_with_momentum(parameters, grads, v, momentum_beta, learning_rate)
+                elif optimizer == "adam":
+                    t = t + 1 # Adam counter
+                    parameters, v, s, _, _ = update_parameters_with_adam(parameters, grads, v, s,
+                                                                   t, learning_rate, adam_beta1, adam_beta2,  epsilon)
+        
+                    
+            if decay:
+                learning_rate = decay(learning_rate0, i, decay_rate)
+
+            cost_avg = cost_total / m
+            if print_cost and (i % 1000 == 0 or i==num_epochs-1):
+                print ("Cost after epoch %i: %f" %(i, cost_avg))
+                if decay:
+                    print("learning rate after epoch %i: %f"%(i, learning_rate))
+                    
+            if print_cost and i % 100 == 0:
+                costs.append(cost_avg)
+
+    
+    else:
+        for i in range(num_epochs):
+            if keep_probs == 1:
+                al, caches = forward_propagation(X, parameters, hidden_activation, output_activation)
+            elif keep_probs < 1:
+                al, caches = forward_propagation_with_dropout(X, parameters, hidden_activation, output_activation, keep_probs)
+            
+            if lambd == 0:
+                cost_avg = compute_cost_log_loss(al, Y)
+            elif lambd > 0:
+                cost_avg = compute_cost_with_regularization(al, Y, parameters, lambd)
+    
+            if lambd >= 0 and keep_probs == 1:
+                grads = backward_propagation(X, Y, caches, hidden_activation, lambd)
+            elif keep_probs < 1:
+                grads = backward_propagation_with_dropout(X, Y, caches, keep_probs, al, hidden_activation)    
+        
+            if optimizer != "momentum" and optimizer != "adam":
+                parameters = update_parameters(parameters, grads, learning_rate)
+            elif optimizer == "momentum":
+                parameters, v = update_parameters_with_momentum(parameters, grads, v, momentum_beta, learning_rate)
+            elif optimizer == "adam":
+                t = t + 1 # Adam counter
+                parameters, v, s, _, _ = update_parameters_with_adam(parameters, grads, v, s,
+                                                               t, learning_rate, adam_beta1, adam_beta2,  epsilon)
+    
+                
+            if decay:
+                learning_rate = decay(learning_rate0, i, decay_rate)
+
+            if check_gradient and (i % 1000 == 0 or i==num_epochs-1):
+                difference = gradient_checking(parameters, grads, X, Y, 1e-7, False, hidden_activation, output_activation)
+                print(f"Gradient check difference: {difference}")
+
+                
+            if print_cost and (i % 1000 == 0 or i==num_epochs-1):
+                print ("Cost after epoch %i: %f" %(i, cost_avg))
+                if decay:
+                    print("learning rate after epoch %i: %f"%(i, learning_rate))
+            if print_cost and i % 100 == 0:
+                costs.append(cost_avg)
+
+            
+    # # plot the cost
+    plt.plot(costs)
+    plt.ylabel('cost')
+    plt.xlabel('epochs (per 100)')
+    plt.title("model Learning rate = " + str(learning_rate))
+    plt.show()
+
+    # Parameters for prediction and grads for gradient checking
+    return parameters, grads
+
+
+################################################## The Model #####################################################################
 
 
 
@@ -655,16 +843,7 @@ def schedule_lr_decay(learning_r, epoch, decay_rate, time_interval=1000):
 
 
 
-
-
-
-
-
-
-
-
-
-### Deprecated
+############################################### Deprecated ###############################################
 
 
 
