@@ -560,7 +560,7 @@ def load_params_and_grads(seed=1):
     return W1, b1, W2, b2, dW1, db1, dW2, db2
 
 
-def initialize_parameters(layer_dims):
+def initialize_parameters1(layer_dims):
     """
     Arguments:
     layer_dims -- python array (list) containing the dimensions of each layer in our network
@@ -615,7 +615,7 @@ def compute_cost(a3, Y):
     
     return cost_total
 
-def forward_propagation(X, parameters):
+def forward_propagation1(X, parameters):
     """
     Implements the forward propagation (and computes the loss) presented in Figure 2.
     
@@ -653,7 +653,7 @@ def forward_propagation(X, parameters):
     
     return a3, cache
 
-def backward_propagation(X, Y, cache):
+def backward_propagation1(X, Y, cache):
     """
     Implement the backward propagation presented in figure 2.
     
@@ -688,7 +688,7 @@ def backward_propagation(X, Y, cache):
     
     return gradients
 
-def predict(X, y, parameters):
+def predict1(X, y, parameters):
     """
     This function is used to predict the results of a  n-layer neural network.
     
@@ -704,7 +704,7 @@ def predict(X, y, parameters):
     p = np.zeros((1,m), dtype = np.int64)
     
     # Forward propagation
-    a3, caches = forward_propagation(X, parameters)
+    a3, caches = forward_propagation1(X, parameters)
     
     # convert probas to 0/1 predictions
     for i in range(0, a3.shape[1]):
